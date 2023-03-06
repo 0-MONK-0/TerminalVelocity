@@ -29,6 +29,17 @@ public class PlayerHealth : MonoBehaviour
     {
         currHealth = currHealth - damage;
     }
+    public void HealHP(float healing)
+    {
+        if (currHealth + healing <= maxHealth)
+        {
+            currHealth = currHealth + healing;
+        }
+        else
+        {
+            currHealth = maxHealth;
+        }
+    }
     public void PlayerDied()
     {
         alive = false;
@@ -37,7 +48,7 @@ public class PlayerHealth : MonoBehaviour
 
     public void RestartLevel()
     {
-        //maybe reload scene or just teleport the player to the start and reset scripts
+        //maybe reload scene or just teleport the player to the start and reset scripts or play a death animation of some kind
         currHealth = maxHealth;
         alive = true;
     }
