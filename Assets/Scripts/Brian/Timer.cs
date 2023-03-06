@@ -6,13 +6,13 @@ using UnityEngine.UI;
 public class Timer : MonoBehaviour
 {
     [SerializeField] bool start = false;
-    [SerializeField] int levelNumber;
+    [SerializeField] string levelName;
     [SerializeField] Text TimerObj;
     float highscore = 0;
     float currTime;
     void Start()
     {
-        
+        highscore = PlayerPrefs.GetFloat(levelName);
     }
 
     void Update()
@@ -40,6 +40,7 @@ public class Timer : MonoBehaviour
         {
             Debug.Log("New Highscore: " + currTime);
             highscore = currTime;
+            PlayerPrefs.SetFloat(levelName, highscore);
         }
         else
         {

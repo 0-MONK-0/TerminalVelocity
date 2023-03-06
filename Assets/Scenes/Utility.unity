@@ -234,7 +234,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   start: 0
-  levelNumber: 0
+  levelName: TESTLEVEL
   TimerObj: {fileID: 635929434}
 --- !u!1 &635929432
 GameObject:
@@ -307,7 +307,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Time: --.-- Highscore: --.--'
+  m_Text: 'Time: --.-- --- Highscore: --.--'
 --- !u!222 &635929435
 CanvasRenderer:
   m_ObjectHideFlags: 0
