@@ -130,8 +130,6 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _QueueControl: 0
-    - _QueueOffset: 0
     - _Small_Wave: 0
     - _Small_WindAmount: 0
     - _Small_WindSpeed: 0
@@ -156,7 +154,7 @@ Material:
     - _ColorTint: {r: 1, g: 1, b: 1, a: 0}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
---- !u!114 &2750009967607664737
+--- !u!114 &6947740650020587852
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
