@@ -97,6 +97,8 @@ public class FirstPersonController : MonoBehaviour
     public bool enableJump = true;
     public KeyCode jumpKey = KeyCode.Space;
     public float jumpPower = 5f;
+    public int jumpAmout = 1;
+    public int jumpAmoutStart;
 
     // Internal Variables
     private bool isGrounded = false;
@@ -151,6 +153,8 @@ public class FirstPersonController : MonoBehaviour
 
     void Start()
     {
+        jumpAmoutStart = jumpAmout;
+        
         if(lockCursor)
         {
             Cursor.lockState = CursorLockMode.Locked;
@@ -326,9 +330,10 @@ public class FirstPersonController : MonoBehaviour
         #region Jump
 
         // Gets input and calls jump method
-        if(enableJump && Input.GetKeyDown(jumpKey) && isGrounded)
+        if(enableJump && Input.GetKeyDown(jumpKey) && isGrounded || enableJump && Input.GetKeyDown(jumpKey) && jumpAmout > 0)
         {
             Jump();
+            DoubleJumpValueCheck();
         }
 
         #endregion
@@ -452,6 +457,7 @@ public class FirstPersonController : MonoBehaviour
         {
             Debug.DrawRay(origin, direction * distance, Color.red);
             isGrounded = true;
+            jumpAmout = jumpAmoutStart;
         }
         else
         {
@@ -459,10 +465,20 @@ public class FirstPersonController : MonoBehaviour
         }
     }
 
+    private void DoubleJumpValueCheck()
+    {
+        jumpAmout--;
+
+        if (isGrounded)
+        {
+            jumpAmout = jumpAmoutStart;
+        }
+    }
+
     private void Jump()
     {
         // Adds force to the player rigidbody to jump
-        if (isGrounded)
+        if (isGrounded || jumpAmout > 0)
         {
             rb.AddForce(0f, jumpPower, 0f, ForceMode.Impulse);
             isGrounded = false;
@@ -550,8 +566,6 @@ public class FirstPersonController : MonoBehaviour
 
         EditorGUILayout.Space();
         GUILayout.Label("Modular First Person Controller", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = 16 });
-        GUILayout.Label("By Jess Case", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Normal, fontSize = 12 });
-        GUILayout.Label("version 1.0.1", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Normal, fontSize = 12 });
         EditorGUILayout.Space();
 
         #region Camera Setup
@@ -687,6 +701,7 @@ public class FirstPersonController : MonoBehaviour
         GUI.enabled = fpc.enableJump;
         fpc.jumpKey = (KeyCode)EditorGUILayout.EnumPopup(new GUIContent("Jump Key", "Determines what key is used to jump."), fpc.jumpKey);
         fpc.jumpPower = EditorGUILayout.Slider(new GUIContent("Jump Power", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
+        fpc.jumpAmout = EditorGUILayout.IntSlider(new GUIContent("Double Jump Amout", "Determines how many extra jump you have"), fpc.jumpAmout, 0, 5);
         GUI.enabled = true;
 
         EditorGUILayout.Space();
