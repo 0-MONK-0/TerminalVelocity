@@ -22,14 +22,15 @@ public class FirstPersonController : MonoBehaviour
 
     [Header("Movement")]
     public Transform orientation;
+    public bool isWallrunning = false;
 
     [Header("Detection")]
     public float wallDistance = .5f;
     public float minimumJumpHeight = 1.5f;
 
     [Header("Wall Running")]
-    public float wallRunGravity;
-    public float wallRunJumpForce;
+    public float wallRunGravity = .7f;
+    public float wallRunJumpForce = 2f;
 
     [Header("Camera")]
     //[SerializeField] private Camera playerCamera;
@@ -46,7 +47,7 @@ public class FirstPersonController : MonoBehaviour
     RaycastHit leftWallHit;
     RaycastHit rightWallHit;
     
-    public float tilt { get; private set; }
+    public float Tilt { get; private set; }
 
     void CheckWall()
     {
@@ -68,9 +69,9 @@ public class FirstPersonController : MonoBehaviour
         playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, wallRunfov, wallRunfovTime * Time.deltaTime);
 
         if (wallLeft)
-            tilt = Mathf.Lerp(tilt, -camTilt, camTiltTime * Time.deltaTime);
+            Tilt = Mathf.Lerp(Tilt, -camTilt, camTiltTime * Time.deltaTime);
         else if (wallRight)
-            tilt = Mathf.Lerp(tilt, camTilt, camTiltTime * Time.deltaTime);
+            Tilt = Mathf.Lerp(Tilt, camTilt, camTiltTime * Time.deltaTime);
         
         if (Input.GetKeyDown(KeyCode.Space))
         {
@@ -94,7 +95,7 @@ public class FirstPersonController : MonoBehaviour
         rb.useGravity = true;
 
         playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, fov, wallRunfovTime * Time.deltaTime);
-        tilt = Mathf.Lerp(tilt, 0, camTiltTime * Time.deltaTime);
+        Tilt = Mathf.Lerp(Tilt, 0, camTiltTime * Time.deltaTime);
     }
 
 
@@ -179,8 +180,8 @@ public class FirstPersonController : MonoBehaviour
     public bool enableJump = true;
     public KeyCode jumpKey = KeyCode.Space;
     public float jumpPower = 5f;
-    public int jumpAmout = 1;
-    public int jumpAmoutStart;
+    public int jumpAmount = 1;
+    public int jumpAmountStart;
 
     // Internal Variables
     private bool isGrounded = false;
@@ -236,7 +237,7 @@ public class FirstPersonController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        jumpAmoutStart = jumpAmout;
+        jumpAmountStart = jumpAmount;
         
         if(lockCursor)
         {
@@ -290,8 +291,8 @@ public class FirstPersonController : MonoBehaviour
     private void Update()
     {
         #region WallRun
-
-        CheckWall();
+    
+        
         
         CheckWall();
 
@@ -301,15 +302,19 @@ public class FirstPersonController : MonoBehaviour
             {
                 StartWallRun();
                 Debug.Log("wall running on the left");
+                isWallrunning = true;
+
             }
             else if (wallRight)
             {
                 StartWallRun();
                 Debug.Log("wall running on the right");
+                isWallrunning = true;
             }
             else
             {
                 StopWallRun();
+                isWallrunning = false;
             }
         }
         else
@@ -443,9 +448,13 @@ public class FirstPersonController : MonoBehaviour
         #region Jump
 
         // Gets input and calls jump method
-        if(enableJump && Input.GetKeyDown(jumpKey) && isGrounded || enableJump && Input.GetKeyDown(jumpKey) && jumpAmout > 0)
+        if(enableJump && Input.GetKeyDown(jumpKey) && isGrounded)
         {
             Jump();
+            
+        }
+        else if (enableJump && Input.GetKeyDown(jumpKey) && jumpAmount > 0 && isWallrunning == false)
+        {
             DoubleJumpValueCheck();
         }
 
@@ -570,7 +579,7 @@ public class FirstPersonController : MonoBehaviour
         {
             Debug.DrawRay(origin, direction * distance, Color.red);
             isGrounded = true;
-            jumpAmout = jumpAmoutStart;
+            jumpAmount = jumpAmountStart;
         }
         else
         {
@@ -580,18 +589,18 @@ public class FirstPersonController : MonoBehaviour
 
     private void DoubleJumpValueCheck()
     {
-        jumpAmout--;
+        jumpAmount--;
 
         if (isGrounded)
         {
-            jumpAmout = jumpAmoutStart;
+            jumpAmount = jumpAmountStart;
         }
     }
 
     private void Jump()
     {
         // Adds force to the player rigidbody to jump
-        if (isGrounded || jumpAmout > 0)
+        if (isGrounded || jumpAmount > 0)
         {
             rb.AddForce(0f, jumpPower, 0f, ForceMode.Impulse);
             isGrounded = false;
@@ -747,22 +756,24 @@ public class FirstPersonController : MonoBehaviour
         fpc.walkSpeed = EditorGUILayout.Slider(new GUIContent("Walk Speed", "Determines how fast the player will move while walking."), fpc.walkSpeed, .1f, fpc.sprintSpeed);
         GUI.enabled = true;
 
-        EditorGUILayout.Space();
         
+
+        #region WallRun Setup
+        EditorGUILayout.Space();
         GUILayout.Label("WallRun", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, fontSize = 13 }, GUILayout.ExpandWidth(true));
         EditorGUILayout.Space();
         
         fpc.orientation = (Transform)EditorGUILayout.ObjectField(new GUIContent("Orientation", "xxx."), fpc.joint, typeof(Transform), true);
-        fpc.wallDistance = EditorGUILayout.Slider(new GUIContent("Wall Distance", "Determines how far the wall is."), fpc.jumpPower, .1f, 20f);
-        fpc.minimumJumpHeight = EditorGUILayout.Slider(new GUIContent("Minimum Jump Height", "Determines how high the player will have to jump to be able to wall run."), fpc.jumpPower, .1f, 20f);
-        fpc.wallRunGravity = EditorGUILayout.Slider(new GUIContent("Wall Run Gravity", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
-        fpc.wallRunJumpForce = EditorGUILayout.Slider(new GUIContent("Wall Run Jump Force", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
+        fpc.wallDistance = EditorGUILayout.FloatField(new GUIContent("Wall Distance", "Determines how far the wall is."), fpc.wallDistance);
+        fpc.minimumJumpHeight = EditorGUILayout.FloatField(new GUIContent("Minimum Jump Height", "Determines how high the player will have to jump to be able to wall run."), fpc.minimumJumpHeight);
+        fpc.wallRunGravity = EditorGUILayout.FloatField(new GUIContent("Wall Run Gravity", "Determines how high the player will jump."), fpc.wallRunGravity);
+        fpc.wallRunJumpForce = EditorGUILayout.FloatField(new GUIContent("Wall Run Jump Force", "Determines how high the player will jump."), fpc.wallRunJumpForce);
         //fpc. = EditorGUILayout.Slider(new GUIContent("Jump Power", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
         
-        
-        
-        
         EditorGUILayout.Space();
+        #endregion
+        
+        
         
         #region Sprint
 
@@ -829,7 +840,7 @@ public class FirstPersonController : MonoBehaviour
         GUI.enabled = fpc.enableJump;
         fpc.jumpKey = (KeyCode)EditorGUILayout.EnumPopup(new GUIContent("Jump Key", "Determines what key is used to jump."), fpc.jumpKey);
         fpc.jumpPower = EditorGUILayout.Slider(new GUIContent("Jump Power", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
-        fpc.jumpAmout = EditorGUILayout.IntSlider(new GUIContent("Double Jump Amout", "Determines how many extra jump you have"), fpc.jumpAmout, 0, 5);
+        fpc.jumpAmount = EditorGUILayout.IntSlider(new GUIContent("Double Jump Amout", "Determines how many extra jump you have"), fpc.jumpAmount, 0, 5);
         GUI.enabled = true;
 
         EditorGUILayout.Space();
