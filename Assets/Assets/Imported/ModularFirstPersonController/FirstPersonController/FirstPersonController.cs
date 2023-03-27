@@ -18,6 +18,88 @@ public class FirstPersonController : MonoBehaviour
 {
     private Rigidbody rb;
 
+    #region WallRun
+
+    [Header("Movement")]
+    public Transform orientation;
+
+    [Header("Detection")]
+    public float wallDistance = .5f;
+    public float minimumJumpHeight = 1.5f;
+
+    [Header("Wall Running")]
+    public float wallRunGravity;
+    public float wallRunJumpForce;
+
+    [Header("Camera")]
+    //[SerializeField] private Camera playerCamera;
+    //[SerializeField] private float fov;
+    public float wallRunfov;
+    public float wallRunfovTime;
+    public float camTilt;
+    public float camTiltTime;
+
+
+    private bool wallLeft = false;
+    private bool wallRight = false;
+    
+    RaycastHit leftWallHit;
+    RaycastHit rightWallHit;
+    
+    public float tilt { get; private set; }
+
+    void CheckWall()
+    {
+        wallLeft = Physics.Raycast(transform.position, -orientation.right, out leftWallHit, wallDistance);
+        wallRight = Physics.Raycast(transform.position, orientation.right, out rightWallHit, wallDistance);
+    }
+    
+    bool CanWallRun()
+    {
+        return !Physics.Raycast(transform.position, Vector3.down, minimumJumpHeight);
+    }
+    
+    void StartWallRun()
+    {
+        rb.useGravity = false;
+
+        rb.AddForce(Vector3.down * wallRunGravity, ForceMode.Force);
+
+        playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, wallRunfov, wallRunfovTime * Time.deltaTime);
+
+        if (wallLeft)
+            tilt = Mathf.Lerp(tilt, -camTilt, camTiltTime * Time.deltaTime);
+        else if (wallRight)
+            tilt = Mathf.Lerp(tilt, camTilt, camTiltTime * Time.deltaTime);
+        
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (wallLeft)
+            {
+                Vector3 wallRunJumpDirection = transform.up + leftWallHit.normal;
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+                rb.AddForce(wallRunJumpDirection * wallRunJumpForce * 100, ForceMode.Force);
+            }
+            else if (wallRight)
+            {
+                Vector3 wallRunJumpDirection = transform.up + rightWallHit.normal;
+                rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); 
+                rb.AddForce(wallRunJumpDirection * wallRunJumpForce * 100, ForceMode.Force);
+            }
+        }
+    }
+
+    void StopWallRun()
+    {
+        rb.useGravity = true;
+
+        playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, fov, wallRunfovTime * Time.deltaTime);
+        tilt = Mathf.Lerp(tilt, 0, camTiltTime * Time.deltaTime);
+    }
+
+
+    #endregion
+    
     #region Camera Movement Variables
 
     public Camera playerCamera;
@@ -153,6 +235,7 @@ public class FirstPersonController : MonoBehaviour
 
     void Start()
     {
+        rb = GetComponent<Rigidbody>();
         jumpAmoutStart = jumpAmout;
         
         if(lockCursor)
@@ -206,6 +289,36 @@ public class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
+        #region WallRun
+
+        CheckWall();
+        
+        CheckWall();
+
+        if (CanWallRun())
+        {
+            if (wallLeft)
+            {
+                StartWallRun();
+                Debug.Log("wall running on the left");
+            }
+            else if (wallRight)
+            {
+                StartWallRun();
+                Debug.Log("wall running on the right");
+            }
+            else
+            {
+                StopWallRun();
+            }
+        }
+        else
+        {
+            StopWallRun();
+        }
+
+        #endregion
+        
         #region Camera
 
         // Control camera movement
@@ -635,7 +748,22 @@ public class FirstPersonController : MonoBehaviour
         GUI.enabled = true;
 
         EditorGUILayout.Space();
-
+        
+        GUILayout.Label("WallRun", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, fontSize = 13 }, GUILayout.ExpandWidth(true));
+        EditorGUILayout.Space();
+        
+        fpc.orientation = (Transform)EditorGUILayout.ObjectField(new GUIContent("Orientation", "xxx."), fpc.joint, typeof(Transform), true);
+        fpc.wallDistance = EditorGUILayout.Slider(new GUIContent("Wall Distance", "Determines how far the wall is."), fpc.jumpPower, .1f, 20f);
+        fpc.minimumJumpHeight = EditorGUILayout.Slider(new GUIContent("Minimum Jump Height", "Determines how high the player will have to jump to be able to wall run."), fpc.jumpPower, .1f, 20f);
+        fpc.wallRunGravity = EditorGUILayout.Slider(new GUIContent("Wall Run Gravity", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
+        fpc.wallRunJumpForce = EditorGUILayout.Slider(new GUIContent("Wall Run Jump Force", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
+        //fpc. = EditorGUILayout.Slider(new GUIContent("Jump Power", "Determines how high the player will jump."), fpc.jumpPower, .1f, 20f);
+        
+        
+        
+        
+        EditorGUILayout.Space();
+        
         #region Sprint
 
         GUILayout.Label("Sprint", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, fontSize = 13 }, GUILayout.ExpandWidth(true));
