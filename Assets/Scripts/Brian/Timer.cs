@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Timer : MonoBehaviour
 {
@@ -46,8 +47,21 @@ public class Timer : MonoBehaviour
         {
             Debug.Log("No New Highscore");
         }
-
+        PlayerPrefs.SetFloat("TempTime", currTime);
+        PlayerPrefs.SetString("lastLevel", levelName);
+        PlayerPrefs.SetInt("finishedLevel", 1);
+        PlayerPrefs.SetString("finishedScene", SceneManager.GetActiveScene().name);
         currTime = 0;
         TimerObj.text = "Time: " + currTime.ToString("0.00") + " --- Highscore: " + highscore.ToString("0.00");
+        SceneManager.LoadScene("FinishScreen");
+    }
+    public void FailedLevel()
+    {
+        start = false;
+        PlayerPrefs.SetFloat("TempTime", currTime);
+        PlayerPrefs.SetString("lastLevel", levelName);
+        PlayerPrefs.SetString("finishedScene", SceneManager.GetActiveScene().name);
+        PlayerPrefs.SetInt("finishedLevel", 0);
+        SceneManager.LoadScene("FinishScreen");
     }
 }

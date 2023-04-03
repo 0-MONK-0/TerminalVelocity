@@ -9,6 +9,7 @@ public class TimerController : MonoBehaviour
     public bool pauseOnRestart = true;
     public bool pauseOrResume;
     public bool finishLevel;
+    public bool failLevel = false;
     public GameObject timerObj;
     // Start is called before the first frame update
     void Start()
@@ -35,6 +36,12 @@ public class TimerController : MonoBehaviour
         {
             finishLevel = false;
             timerObj.GetComponent<Timer>().FinishedLevel();
+        }
+
+        if (failLevel == true)
+        {
+            failLevel = false;
+            timerObj.GetComponent<Timer>().FailedLevel();
         }
     }
 }
