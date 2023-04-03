@@ -10,11 +10,13 @@ public class SettingsScript : MonoBehaviour
     [SerializeField] GameObject resetHighscoreBox;
     string[] allLevels = new string[] { "TESTLEVEL"};
     public Slider masterVolume;
+    public Slider FOVSlider;
 
     // Start is called before the first frame update
     void Start()
     {
         masterVolume.value = PlayerPrefs.GetFloat("masterVolume");
+        FOVSlider.value = PlayerPrefs.GetFloat("firstPersonFOV");
     }
 
     // Update is called once per frame
@@ -34,5 +36,6 @@ public class SettingsScript : MonoBehaviour
             }
         }
         PlayerPrefs.SetFloat("masterVolume", masterVolume.value);
+        PlayerPrefs.SetFloat("firstPersonFOV", FOVSlider.value);
     }
 }
