@@ -303,6 +303,7 @@ public class FirstPersonController : MonoBehaviour
                 StartWallRun();
                 Debug.Log("wall running on the left");
                 isWallrunning = true;
+                jumpAmount = jumpAmountStart;
 
             }
             else if (wallRight)
@@ -310,17 +311,16 @@ public class FirstPersonController : MonoBehaviour
                 StartWallRun();
                 Debug.Log("wall running on the right");
                 isWallrunning = true;
+                jumpAmount = jumpAmountStart;
             }
             else
             {
                 StopWallRun();
                 isWallrunning = false;
+                Debug.Log("isWallRunning = false");
             }
         }
-        else
-        {
-            StopWallRun();
-        }
+        
 
         #endregion
         
@@ -345,7 +345,16 @@ public class FirstPersonController : MonoBehaviour
             pitch = Mathf.Clamp(pitch, -maxLookAngle, maxLookAngle);
 
             transform.localEulerAngles = new Vector3(0, yaw, 0);
-            playerCamera.transform.localEulerAngles = new Vector3(pitch, 0, 0);
+            
+
+            if (isWallrunning == true)
+            {
+                playerCamera.transform.localEulerAngles = new Vector3(pitch, 0, Tilt);
+            }
+            else
+            {
+                playerCamera.transform.localEulerAngles = new Vector3(pitch, 0, 0);
+            }
         }
 
         #region Camera Zoom
@@ -448,15 +457,13 @@ public class FirstPersonController : MonoBehaviour
         #region Jump
 
         // Gets input and calls jump method
-        if(enableJump && Input.GetKeyDown(jumpKey) && isGrounded)
+        if(enableJump && Input.GetKeyDown(jumpKey) && isGrounded || enableJump && Input.GetKeyDown(jumpKey) && jumpAmount > 0 && isWallrunning == false )
         {
             Jump();
+            DoubleJumpValueCheck();
             
         }
-        else if (enableJump && Input.GetKeyDown(jumpKey) && jumpAmount > 0 && isWallrunning == false)
-        {
-            DoubleJumpValueCheck();
-        }
+       
 
         #endregion
 
@@ -707,8 +714,12 @@ public class FirstPersonController : MonoBehaviour
         GUI.enabled = true;
 
         fpc.lockCursor = EditorGUILayout.ToggleLeft(new GUIContent("Lock and Hide Cursor", "Turns off the cursor visibility and locks it to the middle of the screen."), fpc.lockCursor);
-
+        GUILayout.Label("Wall Run Camera Setup", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = 13 }, GUILayout.ExpandWidth(true));
         fpc.crosshair = EditorGUILayout.ToggleLeft(new GUIContent("Auto Crosshair", "Determines if the basic crosshair will be turned on, and sets is to the center of the screen."), fpc.crosshair);
+        fpc.wallRunfov = EditorGUILayout.FloatField(new GUIContent("Wall Run Fov", "Determines how high the player will jump."), fpc.wallRunfov);
+        fpc.wallRunfovTime = EditorGUILayout.FloatField(new GUIContent("Wall Run Fov Time", "Determines how high the player will jump."), fpc.wallRunfovTime);
+        fpc.camTilt = EditorGUILayout.FloatField(new GUIContent("Wall Run Tilt", "Determines how high the player will jump."), fpc.camTilt);
+        fpc.camTiltTime = EditorGUILayout.FloatField(new GUIContent("Wall Run Tilt Time", "Determines how high the player will jump."), fpc.camTiltTime);
 
         // Only displays crosshair options if crosshair is enabled
         if(fpc.crosshair) 
